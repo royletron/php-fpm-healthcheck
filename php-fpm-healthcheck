@@ -114,6 +114,13 @@ check_fpm_health() {
     done
 }
 
+check_migration_health() {
+    migration_output=$(php artisan migrate --pretend)
+    if [[ "${migration_output}" -ne "Nothing to migrate." ]]; then
+        >&2 printf "outstanding migrations\\n";
+    fi
+}
+
 if ! GETOPT=$(getopt -o v --long verbose,accepted-conn:,listen-queue:,max-listen-queue:,listen-queue-len:,idle-processes:,active-processes:,total-processes:,max-active-processes:,max-children-reached:,slow-requests: -n 'php-fpm-healthcheck' -- "$@"); then
     >&2 echo "Invalid options, terminating." ; exit 3
 fi;
@@ -136,3 +143,4 @@ FPM_STATUS=false
 
 get_fpm_status "$FCGI_CONNECT"
 check_fpm_health
+check_migration_health
